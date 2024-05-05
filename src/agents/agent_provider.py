@@ -1,8 +1,8 @@
 from crewai import Agent
-from crewai_tools import WebsiteSearchTool, ScrapeWebsiteTool
+from crewai_tools import ScrapeWebsiteTool
 from langchain.tools import ShellTool
 
-import api_request_tool
+from src.tools import api_request_tool
 
 scrape_tool = ScrapeWebsiteTool()
 shell_tool = ShellTool()
@@ -89,7 +89,7 @@ def api_request_agent(llm):
         llm = llm
     )
 
-def api_test_agent(llm):
+def api_test_agent(llm): # TODO: implement handling the situation when service connection is impossible - e.g. service is not running
     return Agent(
         role='API Tester',
         goal="""Make single API call and return the exact response, including errors, to validate endpoint behavior 

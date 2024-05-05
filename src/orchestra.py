@@ -2,14 +2,14 @@ from crewai import Crew
 
 from src.tasks import tasks
 from src.agents import agent_provider
-from src.llms import llm_manager
+from src.llms import llm_man
 
 
 class SdlcCrew:
   def __init__(self, urls):
     self.urls = urls
   def run(self):
-    manager = llm_manager.LlmManager()
+    manager = llm_man.LlmMan()
     llm_web = manager.get_model_byname("gpt-3.5-turbo").get_llm()
     llm_local = manager.get_model_byname("solar").get_llm()
 

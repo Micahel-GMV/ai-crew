@@ -2,17 +2,19 @@ from crewai import Agent
 from crewai_tools import ScrapeWebsiteTool
 from langchain.tools import ShellTool
 
-from src.tools import api_request_tool
+from src.tools import api_request_tool, file_write_withllm_tool, scrape_pages_tool
 
-scrape_tool = ScrapeWebsiteTool()
+scrape_tool = scrape_pages_tool.ScrapePagesTool()
 shell_tool = ShellTool()
 request_tool = api_request_tool.ApiRequestTool()
+write_tool = file_write_withllm_tool.FileWriteTool()
 
 def text_scraper(llm):
     return Agent(
         role='Full Site Content Scraper',
-        goal="""Surf the entire specified site and extract all available text and data without discrimination. This includes 
-            text from all reachable pages under the specified domain, ensuring comprehensive data capture.""",
+        goal="""Surf the all the provided URLs and extract all available text and data without discrimination. This 
+            includes text from all reachable pages under the specified domain, ensuring comprehensive data capture. 
+            Don`t change the scrapped text in any way.""",
         backstory="""Developed for an outsourcing software development company, this agent is engineered to perform 
             extensive data extraction from entire websites. It navigates through multiple pages, systematically collecting 
             all forms of data presented, aiming to provide a complete dataset of the site's content for exhaustive analysis 
@@ -100,5 +102,19 @@ def api_test_agent(llm): # TODO: implement handling the situation when service c
         memory=True,
         verbose=True,
         allow_delegation=False,
+        llm = llm
+    )
+
+def file_writer(llm):
+    return Agent(
+        role="File Writer",
+        goal="""Write the specified content to a file and pass the content further unchanged. Don`t change the input 
+                content in any way.""",
+        backstory="""This agent writes results to a single file between steps in a task chain and passes the input 
+                    content unchanged.""",
+        tools = [write_tool],
+        memory = True,
+        verbose = True,
+        allow_delegation = False,
         llm = llm
     )

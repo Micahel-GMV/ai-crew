@@ -1,16 +1,16 @@
 from crewai import Task
+from langchain_openai import ChatOpenAI
 
 from src.agents import agent_provider
 
 
 def scrape_full_site_data(urls, llm):
     return Task(
-        description=f"""Navigate through and extract all textual and associated data from the specified site, ensuring 
-            comprehensive data capture. This task involves accessing all available content across the entire site, not 
-            limited to a single page or section. URLs are:[{urls}]""",
-        expected_output="""A complete dataset containing all raw data from the entire site, including text, metadata, 
-            and any other content, without exclusions or structural modifications. This output aims to provide a 
-            thorough representation of the site's current state.""",
+        description=f"""Navigate through and extract all textual and associated data from all the provided links, 
+            ensuring comprehensive data capture. This task involves accessing all available content across the entire 
+            site, not limited to a single page or section. Don`t go out of the domain provided by URLs. Combine all the 
+            information scraped from all the URLs into the single text entity dividing parts with "\n" URLs are:{urls}""",
+        expected_output="""All the text the agent scraped from the website.""",
         agent=agent_provider.text_scraper(llm),
         llm=llm
     )
@@ -76,4 +76,27 @@ def api_request_task_exact(llm):
         tools=agent_provider.api_request_agent(llm).tools,
         agent=agent_provider.api_request_agent(llm),
         llm = llm
+    )
+
+def file_writer_task(file_path, llm):
+    return Task(
+        description=f"""Store the received information into a single file at {file_path} and pass the input content 
+                    unchanged. Don`t alter , filter or remove the input content in any way not before writing it to the 
+                    file nor before passing it further by the chain.""",
+        expected_output="""The output will include a single file stored at the specified location with the provided 
+                    content unchanged, and the task's return will be an exact copy of the inpunt content provided.""",
+        agent=agent_provider.file_writer(llm),
+        tools=agent_provider.file_writer(llm).tools,
+        llm=llm,
+        file_path=file_path
+    )
+
+def pass_urls_tothetool(urls, llm):
+    return Task(
+        description=f"""Just pass URLs provided in the form provided to the scrape tool and the tool will return all the 
+                    needed content scraped from pages. URLs are:[{urls}]""",
+        expected_output="""All the text the agent scraped from the list of pages.""",
+        agent=agent_provider.text_scraper(llm),
+        tools=agent_provider.text_scraper(llm).tools,
+        llm=llm
     )

@@ -3,6 +3,31 @@ from langchain_openai import ChatOpenAI
 
 from src.agents import agent_provider
 
+# ******************************************************* Finalized agents ******************************************
+
+def pass_urls_tothetool(urls, llm):
+    return Task(
+        description=f"""Just pass URLs provided in the form provided to the scrape tool and the tool will return all the 
+                    needed content scraped from pages. URLs are:[{urls}]""",
+        expected_output="""All the text the agent scraped from the list of pages.""",
+        agent=agent_provider.text_scraper(llm),
+        tools=agent_provider.text_scraper(llm).tools,
+        llm=llm
+    )
+# ***************************************************** **************************************************************
+
+def clean_text(llm):
+    return Task(
+        description="""Analyze and refine the text received from the text_scrapper agent to clearly outline different
+                    aspects of the software product being developed. The task involves structuring the information 
+                    to improve readability and coherency, while preserving the original phrasing and terminology as 
+                    much as possible.""",
+        expected_output="""A structured and coherent text document that comprehensively presents all relevant 
+                    information about the product, devoid of any extraneous technical details, with the original 
+                    wording and style maintained.""",
+        agent=agent_provider.text_cleaner(llm),  # Assuming `text_cleaner` is directly callable here
+        llm=llm
+    )
 
 def scrape_full_site_data(urls, llm):
     return Task(
@@ -15,14 +40,7 @@ def scrape_full_site_data(urls, llm):
         llm=llm
     )
 
-def clean_text(llm):
-    return Task(
-        description="""Analyze the text received from the text_scrapper to extract information about the product being 
-                    developed.""",
-        expected_output="""Readable text that contains all the product-relative information.""",
-        agent=agent_provider.text_cleaner(llm),
-        llm = llm
-    )
+
 def generate_features_task(llm):
     return Task(
         description="""Analyze the text received from the text_scrapper to extract and summarize RESTful API features, 
@@ -91,12 +109,4 @@ def file_writer_task(file_path, llm):
         file_path=file_path
     )
 
-def pass_urls_tothetool(urls, llm):
-    return Task(
-        description=f"""Just pass URLs provided in the form provided to the scrape tool and the tool will return all the 
-                    needed content scraped from pages. URLs are:[{urls}]""",
-        expected_output="""All the text the agent scraped from the list of pages.""",
-        agent=agent_provider.text_scraper(llm),
-        tools=agent_provider.text_scraper(llm).tools,
-        llm=llm
-    )
+

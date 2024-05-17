@@ -9,6 +9,7 @@ shell_tool = ShellTool()
 request_tool = api_request_tool.ApiRequestTool()
 write_tool = file_write_withllm_tool.FileWriteTool()
 
+# ******************************************************* Finalized agents ******************************************
 def text_scraper(llm):
     return Agent(
         role='Full Site Content Scraper',
@@ -26,17 +27,23 @@ def text_scraper(llm):
         llm=llm
     )
 
+#
+
+# ***************************************************** **************************************************************
 def text_cleaner(llm):
     return Agent(
         role='Senior Technical Writer',
-        goal="""Analyze the provided raw text from project documentation, and clean it from the technical text from 
-                buttons, links, headers etc.""",
-        backstory="""In an outsourcing software development company, your role involves dissecting raw text to gather
-                    information about the product.""",
+        goal="""Efficiently clean raw project documentation text, removing all extraneous technical elements like 
+                button labels, navigation links, and non-essential headers. Ensure that the core message and wording 
+                of the essential content are preserved, avoiding unnecessary rephrasing or rewording.""",
+        backstory="""In your role at a software development outsourcing company, you specialize in refining and 
+                    structuring raw text to highlight clear, informative content about software products, ensuring 
+                    high-quality documentation. Your task is to extract the essence without altering the original 
+                    text's intent or style.""",
         verbose=True,
-        memory = True,
+        memory=True,
         allow_delegation=False,
-        llm = llm
+        llm=llm
     )
 def features_writer(llm):
     return Agent(

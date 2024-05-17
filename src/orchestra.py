@@ -10,7 +10,11 @@ from src.utils import helper
 def test_llm_dtos(llm_dto_list, llm_functional, test_run_name, llm_temp, iteration_count):
     for llm_dto in llm_dto_list:
         start_cycle_time = time.time()
-        base_path = "./out/" + test_run_name + "_" + llm_dto.get_name() + "_" + f"{llm_temp:.1f}" + "_" + helper.get_datetime_str()
+        if llm_temp is None:
+            temp_str = "def"
+        else:
+            temp_str = f"{llm_temp:.1f}"
+        base_path = "./out/" + test_run_name + "_" + llm_dto.get_name() + "_" + temp_str + "_" + helper.get_datetime_str()
         base_path = base_path.replace(":", "_")
         for run_id in range(1, iteration_count + 1):
             start_iteration_time = time.time()
@@ -22,17 +26,17 @@ def test_llm_dtos(llm_dto_list, llm_functional, test_run_name, llm_temp, iterati
             crew_result = single_test(llm_dto, llm_functional, llm_temp)
             elapsed_time = time.time() - start_iteration_time
             helper.write_content_file(content_path, crew_result)
-            helper.write_stat_file(stat_path, llm_temp, elapsed_time)
+            helper.write_stat_file(stat_path, llm_dto.get_name(), llm_temp, elapsed_time)
         elapsed_cycle_time = time.time() - start_cycle_time
         avg_path = (base_path + "_" + helper.get_datetime_str() + "_avg.txt").replace(":", "_")
-        helper.write_avg_file(avg_path, llm_temp, elapsed_cycle_time, iteration_count)
+        helper.write_avg_file(avg_path, llm_dto.get_name(), llm_temp, elapsed_cycle_time, iteration_count)
 
 @staticmethod
-def single_test(llm_dto, llm_functional, temperature_tested):
+def single_test(llm_dto, llm_functional, llm_temp):
     try:
         llm_current = llm_dto.get_llm()
-        if temperature_tested is not None:
-            llm_current.temperature = temperature_tested
+        if llm_temp is not None:
+            llm_current.temperature = llm_temp
         sdlc_crew = SdlcCrew(urls)
         result = sdlc_crew.run(llm_current, llm_functional)
         print(result)
@@ -48,8 +52,8 @@ class SdlcCrew:
     def run(self, llm_tested, llm_functional):
 
         sdlcCrew = Crew(
-            agents = [agent_provider.text_scraper(llm_tested)],
-            tasks = [task_provider.pass_urls_tothetool(urls, llm_tested)],
+            agents = [agent_provider.text_scraper(llm_functional), agent_provider.text_cleaner(llm_tested)],
+            tasks = [task_provider.pass_urls_tothetool(urls, llm_functional), task_provider.clean_text(llm_tested)],
             verbose = 2,
             share_crew = True
         )
@@ -61,10 +65,9 @@ if __name__ == "__main__":
     urls = """http://localhost/display/MSP/Project+description|http://localhost/pages/viewpage.action?pageId=786443|http://localhost/display/MSP/Service+deployment"""
 
     llm_manager = llm_man.LlmMan()
-    # llm_dto_web = llm_manager.get_model_byname("gpt-3.5-turbo")
-    # llm_dto_functional = llm_manager.get_model_byname("openhermes:latest")
-    # llm_web = llm_manager.get_model_byname("gpt-3.5-turbo").get_llm()
-    #llm_functional = llm_manager.get_model_byname("openhermes:latest").get_llm()
+    llm_dto_functional = llm_manager.get_model_byname("openhermes:latest")
+    llm_functional = llm_manager.get_model_byname("openhermes:latest").get_llm()
+    llm_functional.temperature = 0.0
 
     llm_dto_list = llm_manager.get_models_bymodeltype("pretrained")
     llm_dto_list = [model for model in llm_dto_list if model.is_local]
@@ -72,19 +75,14 @@ if __name__ == "__main__":
     print("pretrained local llms selected:" + str(len(llm_dto_list)))
 
     # HARDCODE PART ***********************************************************************************************
-    # llm_dto_list = [llm_manager.get_model_byname("openhermes:latest"), llm_manager.get_model_byname("solar")]
+    llm_dto_list = [llm_manager.get_model_byname("solar")]
     # *************************************************************************************************************
 
-    test_run_name = "scrape"
-    iteration_count = 3
-    llm_dto_list = [llm_manager.get_model_byname("solar")]
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.5, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.6, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.7, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.8, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.9, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 1.0, iteration_count)
-    test_llm_dtos(llm_dto_list, None, test_run_name, 0.0, iteration_count)
+    test_run_name = "clean"
+    iteration_count = 156
+
+    llm_dto_list = [llm_manager.get_model_byname("phind-codellama")]
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
 
     print("\n\n########################")
     print("## Finish #################")

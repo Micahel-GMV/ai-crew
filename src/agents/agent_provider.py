@@ -1,13 +1,12 @@
 from crewai import Agent
-from crewai_tools import ScrapeWebsiteTool
-from langchain.tools import ShellTool
+from crewai_tools import FileReadTool
 
-from src.tools import api_request_tool, file_write_withllm_tool, scrape_pages_tool
+from src.tools import api_request_tool, file_write_tool, scrape_pages_tool
 
 scrape_tool = scrape_pages_tool.ScrapePagesTool()
-shell_tool = ShellTool()
 request_tool = api_request_tool.ApiRequestTool()
-write_tool = file_write_withllm_tool.FileWriteTool()
+read_tool = FileReadTool()
+write_tool = file_write_tool.FileWriteTool()
 
 # ******************************************************* Finalized agents ******************************************
 def text_scraper(llm):
@@ -29,7 +28,6 @@ def text_scraper(llm):
 
 #
 
-# ***************************************************** **************************************************************
 def text_cleaner(llm):
     return Agent(
         role='Senior Technical Writer',
@@ -45,6 +43,22 @@ def text_cleaner(llm):
         allow_delegation=False,
         llm=llm
     )
+
+# ***************************************************** **************************************************************
+
+def file_reader(llm):
+    return Agent(
+        role="File Reader",
+        goal="""Read the content from a file and pass the content further unchanged without adding any text, comments or 
+                thoughts. Don`t change the content read from the file in any way.""",
+        backstory="""This agent reads content from a specified file and passes the content unchanged.""",
+        tools = [read_tool],
+        memory = True,
+        verbose = True,
+        allow_delegation = False,
+        llm = llm
+    )
+
 def features_writer(llm):
     return Agent(
         role='Senior Business Analyst',

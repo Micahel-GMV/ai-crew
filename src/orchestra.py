@@ -37,7 +37,7 @@ def single_test(llm_dto, llm_functional, llm_temp):
         llm_current = llm_dto.get_llm()
         if llm_temp is not None:
             llm_current.temperature = llm_temp
-        sdlc_crew = SdlcCrew(urls)
+        sdlc_crew = SdlcCrew(parameter)
         result = sdlc_crew.run(llm_current, llm_functional)
         print(result)
         print("======================================================================================================================")
@@ -51,18 +51,27 @@ class SdlcCrew:
         self.urls = urls
     def run(self, llm_tested, llm_functional):
 
+        # sdlcCrew = Crew(
+        #     agents = [agent_provider.text_scraper(llm_functional), agent_provider.text_cleaner(llm_tested)],
+        #     tasks = [task_provider.pass_urls_tothetool(urls, llm_functional), task_provider.clean_text(llm_tested)],
+        #     verbose = 2,
+        #     share_crew = True
+        # )
+
         sdlcCrew = Crew(
-            agents = [agent_provider.text_scraper(llm_functional), agent_provider.text_cleaner(llm_tested)],
-            tasks = [task_provider.pass_urls_tothetool(urls, llm_functional), task_provider.clean_text(llm_tested)],
+            agents = [agent_provider.file_reader(llm_tested)],
+            tasks = [task_provider.read_file(parameter, llm_tested)],
             verbose = 2,
             share_crew = True
         )
+
         return sdlcCrew.kickoff()
 
 if __name__ == "__main__":
     print("## Welcome to CrewAI testbed")
     print('-------------------------------')
-    urls = """http://localhost/display/MSP/Project+description|http://localhost/pages/viewpage.action?pageId=786443|http://localhost/display/MSP/Service+deployment"""
+    # urls = """http://localhost/display/MSP/Project+description|http://localhost/pages/viewpage.action?pageId=786443|http://localhost/display/MSP/Service+deployment"""
+    parameter = """./in/00_scraped_pages.txt"""
 
     llm_manager = llm_man.LlmMan()
     llm_dto_functional = llm_manager.get_model_byname("openhermes:latest")
@@ -75,13 +84,22 @@ if __name__ == "__main__":
     print("pretrained local llms selected:" + str(len(llm_dto_list)))
 
     # HARDCODE PART ***********************************************************************************************
-    llm_dto_list = [llm_manager.get_model_byname("solar")]
+    # llm_dto_list = [llm_manager.get_model_byname("openhermes:latest"), llm_manager.get_model_byname("solar")]
     # *************************************************************************************************************
 
-    test_run_name = "clean"
-    iteration_count = 156
+    test_run_name = "read_file"
+    iteration_count = 100
 
-    llm_dto_list = [llm_manager.get_model_byname("phind-codellama")]
+    llm_dto_list = [llm_manager.get_model_byname("mixtral")]
+    print("pretrained local llms selected:" + str(len(llm_dto_list)))
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
+
+    llm_dto_list = [llm_manager.get_model_byname("openhermes:latest")]
+    print("pretrained local llms selected:" + str(len(llm_dto_list)))
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
+
+    llm_dto_list = [llm_manager.get_model_byname("solar")]
+    print("pretrained local llms selected:" + str(len(llm_dto_list)))
     test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
 
     print("\n\n########################")

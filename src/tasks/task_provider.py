@@ -14,7 +14,6 @@ def pass_urls_tothetool(urls, llm):
         tools=agent_provider.text_scraper(llm).tools,
         llm=llm
     )
-# ***************************************************** **************************************************************
 
 def clean_text(llm):
     return Task(
@@ -28,6 +27,20 @@ def clean_text(llm):
         agent=agent_provider.text_cleaner(llm),  # Assuming `text_cleaner` is directly callable here
         llm=llm
     )
+
+# ***************************************************** **************************************************************
+
+def read_file(file_path, llm):
+    return Task(
+        description=f"""Just pass file path to the file read tool and the tool will return all the needed content read 
+                        from the file. The file may be empty. Don`t add any comments or thoughts to the output. 
+                        File path is:{file_path}""",
+        expected_output="""Exact text the agent read from the file.""",
+        agent=agent_provider.file_reader(llm),
+        tools=agent_provider.file_reader(llm).tools,
+        llm=llm
+    )
+
 
 def scrape_full_site_data(urls, llm):
     return Task(

@@ -44,8 +44,6 @@ def text_cleaner(llm):
         llm=llm
     )
 
-# ***************************************************** **************************************************************
-
 def file_reader(llm):
     return Agent(
         role="File Reader",
@@ -62,8 +60,8 @@ def file_reader(llm):
 def features_writer(llm):
     return Agent(
         role='Senior Business Analyst',
-        goal="""Analyze the provided text from project documentation, accurately summarize all the RESTful API features, 
-                ensuring only to include features explicitly described in the Confluence documentation, and prepare a detailed
+        goal="""Analyze the provided text from project documentation. Accurately summarize all the RESTful API features, 
+                ensuring only to include features explicitly described in the Confluence documentation. Prepare a detailed
                 list of these features for the test_writer agent.""",
         backstory="""In an outsourcing software development company, your role involves dissecting complex product documentation 
                      to identify and clearly define RESTful service features. Your analytical skills ensure that only precise 
@@ -74,13 +72,19 @@ def features_writer(llm):
         llm = llm
     )
 
+# ***************************************************** **************************************************************
+
 def test_cases_writer(llm):
     return Agent(
-        role='Test Cases Writer',
-        goal='Write comprehensive test cases for given requirements, including various test scenarios',
-        backstory="""As an experienced QA Engineer in an outsourcing software development company, you specialize in translating
-                     detailed requirements into clear, structured test cases that cover all necessary scenarios, including positive,
-                     negative, and corner cases.""",
+        role='API Test Case Engineer',
+        goal="""Develop detailed and comprehensive test cases for API services, strictly based on provided requirements, 
+             without assumptions. These test cases must cover a wide range of scenarios including positive, negative, 
+             edge, and corner cases.""",
+        backstory="""With extensive experience as a QA Engineer at an outsourcing software development company, 
+                     you excel at converting detailed API requirements into well-structured, thorough test cases 
+                     that ensure robust testing across various scenarios. You are meticulous about adhering to given 
+                     specifications and avoiding any assumptions that are not explicitly stated in the requirements. 
+                     Your expertise includes considering edge cases and unusual scenarios to ensure thorough coverage.""",
         verbose=True,
         memory = True,
         allow_delegation=False,

@@ -50,6 +50,8 @@ class SdlcCrew:
     def __init__(self, urls):
         self.urls = urls
     def run(self, llm_tested, llm_functional):
+        """llm_tested parameter here is LLM object that performs operation for the test, llm_functional does preparation
+            work for the test like reading or writing the file, scraping the website (if this action is not test itself)"""
 
         # sdlcCrew = Crew(
         #     agents = [agent_provider.text_scraper(llm_functional), agent_provider.text_cleaner(llm_tested)],
@@ -59,8 +61,8 @@ class SdlcCrew:
         # )
 
         sdlcCrew = Crew(
-            agents = [agent_provider.file_reader(llm_tested)],
-            tasks = [task_provider.read_file(parameter, llm_tested)],
+            agents = [agent_provider.file_reader(llm_functional), agent_provider.test_cases_writer(llm_tested)],
+            tasks = [task_provider.read_file(parameter, llm_functional), task_provider.write_test_cases(llm_tested)],
             verbose = 2,
             share_crew = True
         )
@@ -71,7 +73,7 @@ if __name__ == "__main__":
     print("## Welcome to CrewAI testbed")
     print('-------------------------------')
     # urls = """http://localhost/display/MSP/Project+description|http://localhost/pages/viewpage.action?pageId=786443|http://localhost/display/MSP/Service+deployment"""
-    parameter = """./in/00_scraped_pages.txt"""
+    parameter = """./in/02_features.txt"""
 
     llm_manager = llm_man.LlmMan()
     llm_dto_functional = llm_manager.get_model_byname("openhermes:latest")
@@ -87,20 +89,18 @@ if __name__ == "__main__":
     # llm_dto_list = [llm_manager.get_model_byname("openhermes:latest"), llm_manager.get_model_byname("solar")]
     # *************************************************************************************************************
 
-    test_run_name = "read_file"
-    iteration_count = 100
+    iteration_count = 20
 
-    llm_dto_list = [llm_manager.get_model_byname("mixtral")]
-    print("pretrained local llms selected:" + str(len(llm_dto_list)))
-    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
+    test_run_name = "write_test_cases"
 
-    llm_dto_list = [llm_manager.get_model_byname("openhermes:latest")]
-    print("pretrained local llms selected:" + str(len(llm_dto_list)))
-    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
+    llm_dto_list = [llm_manager.get_model_byname("codebooga")]
 
-    llm_dto_list = [llm_manager.get_model_byname("solar")]
-    print("pretrained local llms selected:" + str(len(llm_dto_list)))
-    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.0, iteration_count)
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.3, iteration_count)
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.4, iteration_count)
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.5, iteration_count)
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.2, iteration_count)
+    test_llm_dtos(llm_dto_list, llm_functional, test_run_name, 0.1, iteration_count)
+
 
     print("\n\n########################")
     print("## Finish #################")

@@ -28,8 +28,6 @@ def clean_text(llm):
         llm=llm
     )
 
-# ***************************************************** **************************************************************
-
 def read_file(file_path, llm):
     return Task(
         description=f"""Just pass file path to the file read tool and the tool will return all the needed content read 
@@ -41,37 +39,38 @@ def read_file(file_path, llm):
         llm=llm
     )
 
-
-def scrape_full_site_data(urls, llm):
-    return Task(
-        description=f"""Navigate through and extract all textual and associated data from all the provided links, 
-            ensuring comprehensive data capture. This task involves accessing all available content across the entire 
-            site, not limited to a single page or section. Don`t go out of the domain provided by URLs. Combine all the 
-            information scraped from all the URLs into the single text entity dividing parts with "\n" URLs are:{urls}""",
-        expected_output="""All the text the agent scraped from the website.""",
-        agent=agent_provider.text_scraper(llm),
-        llm=llm
-    )
-
-
-def generate_features_task(llm):
+def write_features(llm):
     return Task(
         description="""Analyze the text received from the text_scrapper to extract and summarize RESTful API features, 
-                       including endpoints, HTTP methods, and expected parameters, as described in the Confluence documentation.""",
+                       including endpoints, HTTP methods, expected parameters, and deployment information as 
+                       described in the Confluence documentation. The result must be formatted as JSON that can be 
+                       parsed without further transformation. Similar entities must be arranged in lists. Prettify the 
+                       JSON representation at the end to make it more readable.""",
         expected_output="""Structured list (e.g., JSON) of RESTful API features, including endpoint descriptions, supported HTTP methods,
-                          and parameters.""",
+                          parameters, and deployment information.""",
         agent=agent_provider.features_writer(llm),
         llm = llm
     )
+# ***************************************************** **************************************************************
 
-def write_test_cases_task(llm):
+def write_test_cases(llm):
     return Task(
-        description="""Using the requirements provided, develop structured, comprehensive, and repeatable test cases that 
-                       can be understood and executed manually or automated by test execution tools. Focus on creating test cases
-                       that cover a full range of scenarios derived from the requirements.""",
-        expected_output="""Structured list of test cases in JSON format, where each test case includes fields for 
-                            precondition, action, and expected result. Each action may correspond to multiple intermediate 
-                            results.""",
+        description="""Using the provided API features and requirements, generate structured, comprehensive, 
+                       and repeatable test cases. These test cases should cover a wide range of scenarios including 
+                       positive, negative, edge, and corner cases.
+
+                       Important:
+                       - Strictly adhere to the provided requirements without introducing any additional restrictions or assumptions.
+                       - Ensure the test cases are detailed, specifying parameters and expected results accurately.
+                       - Avoid redundancy by combining similar test scenarios.
+                       - Include edge cases and scenarios involving special characters and unusual inputs.
+                       - Format the result as JSON that is directly usable for manual execution or automation tools.
+                       - Ensure the JSON is prettified for readability and include comments as additional JSON values where necessary.""",
+        expected_output="""A structured list of test cases in JSON format, each with fields for precondition, 
+                           action, and expected result. The JSON should be organized to allow for easy parsing 
+                           and execution. Similar test cases should be grouped together in lists, and the JSON 
+                           should be formatted for readability. Edge cases and special character scenarios should 
+                           be explicitly included.""",
         agent=agent_provider.test_cases_writer(llm),
         llm = llm
     )
@@ -121,5 +120,17 @@ def file_writer_task(file_path, llm):
         llm=llm,
         file_path=file_path
     )
+
+def scrape_full_site_data(urls, llm):
+    return Task(
+        description=f"""Navigate through and extract all textual and associated data from all the provided links, 
+            ensuring comprehensive data capture. This task involves accessing all available content across the entire 
+            site, not limited to a single page or section. Don`t go out of the domain provided by URLs. Combine all the 
+            information scraped from all the URLs into the single text entity dividing parts with "\n" URLs are:{urls}""",
+        expected_output="""All the text the agent scraped from the website.""",
+        agent=agent_provider.text_scraper(llm),
+        llm=llm
+    )
+
 
 

@@ -2,6 +2,8 @@ from crewai import Agent
 from crewai_tools import FileReadTool
 
 from src.tools import api_request_tool, file_write_tool, scrape_pages_tool
+from src.agents.agent_wrapper import AgentWrapper
+from src.tasks.task_wrapper import TaskWrapper
 
 scrape_tool = scrape_pages_tool.ScrapePagesTool()
 request_tool = api_request_tool.ApiRequestTool()
@@ -20,7 +22,7 @@ def text_scraper(llm):
             all forms of data presented, aiming to provide a complete dataset of the site's content for exhaustive analysis 
             and archival purposes.""",
         verbose=True,
-        memory = True,
+        memory = False,
         allow_delegation=False,
         tools=[scrape_tool],
         llm=llm
@@ -39,7 +41,7 @@ def text_cleaner(llm):
                     high-quality documentation. Your task is to extract the essence without altering the original 
                     text's intent or style.""",
         verbose=True,
-        memory=True,
+        memory=False,
         allow_delegation=False,
         llm=llm
     )
@@ -72,8 +74,6 @@ def features_writer(llm):
         llm = llm
     )
 
-# ***************************************************** **************************************************************
-
 def test_cases_writer(llm):
     return Agent(
         role='API Test Case Engineer',
@@ -91,41 +91,45 @@ def test_cases_writer(llm):
         llm = llm
     )
 
-def test_cases_implementer(llm):
+def test_cases_normalizer(llm):
     return Agent(
-        role='Test Cases Implementer',
-        goal='Get testcases written by previous agents, the URL of the deployed service to test API endpoints.',
-        backstory="""As an experienced QA Engineer in an outsourcing software development company, you specialize in 
-                    compiling provided testcases and URL of the deployed service in completed list of URLS to test 
-                    endpoint and additional information like request body and HTTP verb to perform the API call.""",
+        role='API Test Cases Normalizer',
+        goal="""Transform incoming JSONs into a format that matches the given JSON schema, ensuring that all relevant 
+            information is retained and correctly structured. The agent should validate the JSON against the schema, 
+            make necessary adjustments to comply with the schema, and produce output that meets the defined standards
+            and preserves all the information comprised in the given JSON.""",
+        backstory="""With extensive experience as a QA Engineer at a leading software development company, you have a 
+            proven track record of ensuring the quality and robustness of API services. Your expertise lies in 
+            meticulously analyzing API documentation and translating it into well-structured, comprehensive test cases. 
+            You are skilled at identifying edge cases and ensuring thorough coverage, adhering strictly to 
+            specifications without making assumptions. Your background includes working with various teams to ensure the 
+            highest standards of software quality.""",
         verbose=True,
         memory = True,
         allow_delegation=False,
         llm = llm
     )
-def api_request_agent(llm):
-    return Agent(
-        role='API Caller',
-        goal="""Make and test API calls based on previous agent outputs to evaluate service functionality.""",
-        backstory="""This agent is designed to automate and validate API interactions by utilizing data provided by 
-                    preceding agents in the chain, thereby enhancing integration and testing workflows.""",
-        tools=[request_tool],
-        memory=True,
-        verbose=True,
-        allow_delegation=False,
+
+def injector(llm):
+    return AgentWrapper(
+        role="",
+        goal="",
+        backstory="",
+        memory = False,
+        verbose = True,
+        allow_delegation = False,
         llm = llm
     )
+# ***************************************************** **************************************************************
 
-def api_test_agent(llm): # TODO: implement handling the situation when service connection is impossible - e.g. service is not running
+def test_report_writer(llm):
     return Agent(
-        role='API Tester',
-        goal="""Make single API call and return the exact response, including errors, to validate endpoint behavior 
-            under specified conditions.""",
-        backstory="""This agent is designed for testing API interactions by making exact calls with predefined 
-                parameters and capturing all aspects of the response for analysis.""",
-        tools=[request_tool],
-        memory=True,
+        role='Senior Test Case Engineer',
+        goal="""Analyze the test run comparison to test cases output and give feedback on each test case.""",
+        backstory="""With extensive experience as a QA Engineer at an outsourcing software development company, 
+                     you excel at analyzing test run outputs and providing detailed feedback.""",
         verbose=True,
+        memory = True,
         allow_delegation=False,
         llm = llm
     )
@@ -143,3 +147,5 @@ def file_writer(llm):
         allow_delegation = False,
         llm = llm
     )
+
+

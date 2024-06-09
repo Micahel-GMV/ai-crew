@@ -35,7 +35,7 @@ class LlmDto:
                 f"Purpose: {self.model_purpose}, Size: {self.size}>")
 
 
-class LlmMan:
+class LlmProvider:
     def __init__(self):
         self.llms : [LlmDto] = []
         self.init_models()
@@ -64,45 +64,62 @@ class LlmMan:
             ("text-embedding-3-large",   base_url_web,   api_key_web,   False,    0.0,      175,    False,  "transformer", ["Wide-range Datasets"],              "pretrained",           "Highly versatile, large-scale NLP model capable of understanding and generating human-like text."),
 
             ("openhermes:latest",        base_url_loc,   api_key_loc,   False,     4.1,      7.0,  4,     "transformer",  ["Chat Applications"],   "pretrained",         "Optimized for building interactive chat interfaces."),
+            ("solar",                    base_url_loc,   api_key_loc,   False,     4.1,      7.0,  4,     "transformer",  ["Chat Applications"],   "pretrained",         "Optimized for building interactive chat interfaces."),
 
-            ("all-minilm",               base_url_loc,   api_key_loc,   True,     0.045,    0.023,  "F16" , "transformer", ["Text Corpus"],                      "embedded",             "Compact model for general natural language processing tasks."),
+            # ("all-minilm",               base_url_loc,   api_key_loc,   True,     0.045,    0.023,  "F16" , "transformer", ["Text Corpus"],                      "embedded",             "Compact model for general natural language processing tasks."),
             ("codebooga",                base_url_loc,   api_key_loc,   True,     19.0,     34.0,   4,      "transformer", ["Developer Code"],                   "pretrained",       "Advanced model for automated code generation and analysis."),
+            # More than 25 mins @0.3 during write_report test. Frozen @0.2
             ("codegemma",                base_url_loc,   api_key_loc,   True,     5.0,      9.0,    4,      "gemma",       ["Project Code"],                     "pretrained",           "Optimized for static code analysis and quality improvements."), # has 3 variants: instruct, cose, 2b - test deeply
             ("codeqwen",                 base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "qwen2",       ["Public Repos"],                     "pretrained",         "Focuses on generating boilerplate code from specifications."),
-            # ("dolphincoder",             base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "starcoder2",  ["Programming Forums"],               "pretrained",                  "Designed to interpret and answer programming queries."),
-            # ("falcon",                   base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "falcon",      ["Falcon RefinedWeb"],                "pretrained",                "Used in high-performance computing tasks for research."),
+            ("codestral",                base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["General Text"],        "pretrained",             "General-purpose NLP model for a variety of text processing tasks."),
+            # ("command-r",                 base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "qwen2",       ["Public Repos"],                     "pretrained",         "Focuses on generating boilerplate code from specifications."),
+            # Timeouts: pass content @0.7
+            # ("command-r-plus:104b-q2_K",                 base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "qwen2",       ["Public Repos"],                     "pretrained",         "Focuses on generating boilerplate code from specifications."),
+            # Timeouts: pass content @0.0 just from the start
+            ("dolphincoder",             base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "starcoder2",  ["Programming Forums"],               "pretrained",                  "Designed to interpret and answer programming queries."),
+            ("falcon",                   base_url_loc,   api_key_loc,   True,     4.2,      7.0,    4,      "falcon",      ["Falcon RefinedWeb"],                "pretrained",                "Used in high-performance computing tasks for research."),
             ("gemma",                    base_url_loc,   api_key_loc,   True,     5.0,      9.0,    4,      "gemma",       ["Web documents, code, mathematics"], "pretrained",           "Specializes in data mining and pattern recognition."),
-            # ("llama3",                   base_url_loc,   api_key_loc,   True,     4.7,   8.0,    4, "llama",               ["Large Texts"],                      "pretrained",                   "Enhanced capabilities for understanding and generating natural language."),
-            # ("magicoder",                base_url_loc,   api_key_loc,   True,     3.8,      1,      False, "transformer",  ["Source Code"],         "pretrained",                  "Focuses on automating routine coding tasks."),
-            # ("mistral",                  base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["General Text"],        "pretrained",             "General-purpose NLP model for a variety of text processing tasks."),
+            ("llama3",                   base_url_loc,   api_key_loc,   True,     4.7,   8.0,    4, "llama",               ["Large Texts"],                      "pretrained",                   "Enhanced capabilities for understanding and generating natural language."),
+            # Loves English classical literature too much. Is not usable for precise work.
+            ("llama3:instruct",                   base_url_loc,   api_key_loc,   True,     4.7,   8.0,    4, "llama",               ["Large Texts"],                      "pretrained",                   "Enhanced capabilities for understanding and generating natural language."),
+            ("magicoder",                base_url_loc,   api_key_loc,   True,     3.8,      1,      False, "transformer",  ["Source Code"],         "pretrained",                  "Focuses on automating routine coding tasks."),
+            #
+            ("mistral",                  base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["General Text"],        "pretrained",             "General-purpose NLP model for a variety of text processing tasks."),
+            # Timeouts: normalize frozen @0.4
+            ("mistral:instruct",           base_url_loc,   api_key_loc,   True,     4.1,      7.2,    False, "transformer",  ["General Text"],        "pretrained",             "General-purpose NLP model for a variety of text processing tasks."),
             ("mistral-openorca",         base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["Open Data"],           "pretrained",              "Capable of handling diverse datasets for open-ended tasks."),
-            # ("mistrallite",              base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["Lite Tasks"],          "pretrained",         "Lighter version of Mistral for less resource-intensive tasks."),
-            # ("mixtral",                  base_url_loc,   api_key_loc,   True,     26.0,     2,    True,  "transformer",  ["Mixed Data"],          "pretrained",        "High-capacity model designed for complex data processing tasks."),
-            # ("moondream",                base_url_loc,   api_key_loc,   True,     1.7,      1,    False, "transformer",  ["Dream Analysis"],      "pretrained",          "Specialized in modeling and interpreting dream content."),
+            ("mistrallite",              base_url_loc,   api_key_loc,   True,     4.1,      1,      False, "transformer",  ["Lite Tasks"],          "pretrained",         "Lighter version of Mistral for less resource-intensive tasks."),
+            ("mixtral",                  base_url_loc,   api_key_loc,   True,     26.0,     2,    True,  "transformer",  ["Mixed Data"],          "pretrained",        "High-capacity model designed for complex data processing tasks."),
+            ("mixtral:instruct",                  base_url_loc,   api_key_loc,   True,     26.0,     2,    True,  "transformer",  ["Mixed Data"],          "pretrained",        "High-capacity model designed for complex data processing tasks."),
+            # normalize @ 0.5
+            ("moondream",                base_url_loc,   api_key_loc,   True,     1.7,      1,    False, "transformer",  ["Dream Analysis"],      "pretrained",          "Specialized in modeling and interpreting dream content."),
             ("mxbai-embed-large",        base_url_loc,   api_key_loc,   True,     0.669,    1,    False, "transformer",  ["Embeddings"],          "embedded",               "Focused on creating and using large-scale text embeddings."),
-            # ("neural-chat",              base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Chat Data"],           "pretrained",                 "Designed to simulate conversational dynamics for chatbots."),
-            # ("nexusraven",               base_url_loc,   api_key_loc,   True,     7.4,      2,    True,  "transformer",  ["Complex NLP Tasks"],   "pretrained",            "Advanced NLP model for complex language understanding and generation."),
+            ("neural-chat",              base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Chat Data"],           "pretrained",                 "Designed to simulate conversational dynamics for chatbots."),
+            ("nexusraven",               base_url_loc,   api_key_loc,   True,     7.4,      2,    True,  "transformer",  ["Complex NLP Tasks"],   "pretrained",            "Advanced NLP model for complex language understanding and generation."),
             ("nomic-embed-text",         base_url_loc,   api_key_loc,   True,     0.274,    1,    False, "transformer",  ["Text Embedding"],      "embedded",               "Efficient at producing text embeddings for various applications."),
-            # ("notux",                    base_url_loc,   api_key_loc,   True,     26,       47,    True,  "transformer",  ["High-Capacity Tasks"], "pretrained",    "Designed for computational tasks requiring extensive resources."),
-            # ("open-orca-platypus2",      base_url_loc,   api_key_loc,   True,     7.4,      2,    True,  "orca",         ["Diverse Datasets"],    "pretrained",         "Handles complex data processing tasks across various domains."),
+            ("notux",                    base_url_loc,   api_key_loc,   True,     26,       47,    True,  "transformer",  ["High-Capacity Tasks"], "pretrained",    "Designed for computational tasks requiring extensive resources."),
+            ("open-orca-platypus2",      base_url_loc,   api_key_loc,   True,     7.4,      2,    True,  "orca",         ["Diverse Datasets"],    "pretrained",         "Handles complex data processing tasks across various domains."),
             ("openchat",                 base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Chat Applications"],   "pretrained",         "Optimized for building interactive chat interfaces."),
             ("openhermes:latest",        base_url_loc,   api_key_loc,   True,     4.1,      7.0,  4,     "transformer",  ["Chat Applications"],   "pretrained",         "Optimized for building interactive chat interfaces."),
             ("phi3",                     base_url_loc,   api_key_loc,   True,     2.3,      1,    False, "transformer",  ["Educational Content"], "pretrained",               "Designed to support and enhance educational applications."),
             ("phind-codellama",          base_url_loc,   api_key_loc,   True,     19.0,     2,    True,  "llama",        ["Coding Challenges"],   "pretrained",         "Excels in solving complex coding problems and challenges."),
             ("solar",                    base_url_loc,   api_key_loc,   True,     6.1,      1,    False, "transformer",  ["Solar Data"],          "pretrained",      "Used for predictive modeling in solar energy systems."),
-            # ("stable-code",              base_url_loc,   api_key_loc,   True,     1.6,      1,    False, "transformer",  ["Stable Systems"],      "pretrained",        "Ensures stability in automated systems."),
-            # ("starcoder2:15b",           base_url_loc,   api_key_loc,   True,     9.1,      16,    True,  "transformer",  ["Next-gen Coding"],     "pretrained",     "Advanced model for next-generation code development."),
+            ("stable-code",              base_url_loc,   api_key_loc,   True,     1.6,      1,    False, "transformer",  ["Stable Systems"],      "pretrained",        "Ensures stability in automated systems."),
+            ("starcoder2:15b",           base_url_loc,   api_key_loc,   True,     9.1,      16,    True,  "transformer",  ["Next-gen Coding"],     "pretrained",     "Advanced model for next-generation code development."),
+            ("starcoder2:instruct",           base_url_loc,   api_key_loc,   True,     9.1,      16,    True,  "transformer",  ["Next-gen Coding"],     "pretrained",     "Advanced model for next-generation code development."),
+            # Timeouts: pass content @0.0 just from the start
             ("starling-lm",              base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Language Data"],       "pretrained",       "Specializes in language modeling for various applications."),
-            # ("tinydolphin",              base_url_loc,   api_key_loc,   True,     0.636,    1,    False, "transformer",  ["Quick Tasks"],         "pretrained",          "Rapid analysis and response for on-the-go tasks."),
-            # ("tinyllama",                base_url_loc,   api_key_loc,   True,     0.637,    1,    False, "transformer",  ["Small Tasks"],         "pretrained",              "Efficient processing for small-scale tasks."),
-            # ("wizard-math",              base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Math Problems"],       "pretrained",   "Specializes in solving complex mathematical problems."),
-            # ("wizard-vicuna-uncensored", base_url_loc,   api_key_loc,   True,     3.8,      1,    False, "transformer",  ["Uncensored Content"],  "pretrained",      "Handles and moderates uncensored content effectively."),
-            # ("wizardcoder:latest",       base_url_loc,   api_key_loc,   True,     3.8,      7.0,  4,     "llama",        ["Elite Coding"],        "pretrained",      "Top-tier model for elite coding tasks and algorithms."),
-            # ("wizardcoder:34b-python-q8_0",base_url_loc,   api_key_loc,   True, 35.0,     2,    True,  "transformer",   ["Elite Coding"],        "pretrained",      "Top-tier model for elite coding tasks and algorithms."),
+            ("tinydolphin",              base_url_loc,   api_key_loc,   True,     0.636,    1,    False, "transformer",  ["Quick Tasks"],         "pretrained",          "Rapid analysis and response for on-the-go tasks."),
+            ("tinyllama",                base_url_loc,   api_key_loc,   True,     0.637,    1,    False, "transformer",  ["Small Tasks"],         "pretrained",              "Efficient processing for small-scale tasks."),
+            ("wizard-math",              base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Math Problems"],       "pretrained",   "Specializes in solving complex mathematical problems."),
+            ("wizard-vicuna-uncensored", base_url_loc,   api_key_loc,   True,     3.8,      1,    False, "transformer",  ["Uncensored Content"],  "pretrained",      "Handles and moderates uncensored content effectively."),
+            ("wizardcoder:latest",       base_url_loc,   api_key_loc,   True,     3.8,      7.0,  4,     "llama",        ["Elite Coding"],        "pretrained",      "Top-tier model for elite coding tasks and algorithms."),
+            # Timeouts: normalize @0.0 just from the start
+            ("wizardcoder:34b-python-q8_0",base_url_loc,   api_key_loc,   True, 35.0,     2,    True,  "transformer",   ["Elite Coding"],        "pretrained",      "Top-tier model for elite coding tasks and algorithms."),
             ("wizardlm2",                base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Broad NLP"],           "pretrained",             "Versatile NLP capabilities for broad applications."),
-            # ("xwinlm",                   base_url_loc,   api_key_loc,   True,     3.8,      1,    False, "transformer",  ["Cross-window Learning"],"pretrained",         "Facilitates learning across multiple data windows."),
-            # ("yi",                       base_url_loc,   api_key_loc,   True,     3.5,      1,    False, "transformer",  ["General AI"],          "pretrained",      "General-purpose AI for a wide range of tasks."),
-            # ("zephyr",                   base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Light Applications"],  "pretrained",    "Optimized for real-time processing in lightweight applications.")
+            ("xwinlm",                   base_url_loc,   api_key_loc,   True,     3.8,      1,    False, "transformer",  ["Cross-window Learning"],"pretrained",         "Facilitates learning across multiple data windows."),
+            ("yi",                       base_url_loc,   api_key_loc,   True,     3.5,      1,    False, "transformer",  ["General AI"],          "pretrained",      "General-purpose AI for a wide range of tasks."),
+            ("zephyr",                   base_url_loc,   api_key_loc,   True,     4.1,      1,    False, "transformer",  ["Light Applications"],  "pretrained",    "Optimized for real-time processing in lightweight applications.")
         ]
 
         for info in models_info:

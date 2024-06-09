@@ -2,7 +2,7 @@ from crewai import Crew
 
 from src.tasks import task_provider
 from src.agents import agent_provider
-from src.llms import llm_man
+from src.llms import llm_provider
 
 # sdlcCrew1 = Crew(
 #     agents=[agent_provider.text_scraper(llm_web),

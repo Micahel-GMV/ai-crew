@@ -9,6 +9,8 @@ crewai-tools = "0.1.7"
 langchain = "*"
 langchain-experimental = "*"
 langchain_community = "*"
+psycopg2 = "*"
+chardet = "*"
 
 [dev-packages]
 
